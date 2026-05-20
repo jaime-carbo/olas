@@ -37,7 +37,7 @@ async def homepage():
 
 async def generate_events(width=350, height=50):
     i = 0
-    longitud = int(width / 7.875)
+    longitud = int(width / 7.2)
     height = int(height / 80)
     x = np.linspace(0, 10, longitud)
     while True:
