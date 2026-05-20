@@ -23,3 +23,13 @@ jobs:
                 tags: |
                   ghcr.io/${{ github.repository }}:latest
                   ghcr.io/${{ github.repository }}:${{ github.sha }}
+            
+            - name: Update image tag
+              run: |
+                cd manifests
+                sed -i "s|image: ghcr.io/jaime-carbo/olas:.*|image: ghcr.io/jaime-carbo/olas:${{ github.sha }}|" apps/first-app.yaml
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git add apps/first-app.yaml
+                git commit -m "Update demo-api to ${{ github.sha }}"
+                git push
