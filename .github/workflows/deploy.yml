@@ -24,8 +24,11 @@ jobs:
                   ghcr.io/${{ github.repository }}:latest
                   ghcr.io/${{ github.repository }}:${{ github.sha }}
             
-            - name: Update image tag
+            - name: Update image tag in k8s-manifests
+              env:
+                MANIFESTS_PAT: ${{ secrets.MANIFESTS_PAT }}
               run: |
+                git clone https://jaime-carbo:${MANIFESTS_PAT}@github.com/jaime-carbo/k8s-manifests.git manifests
                 cd manifests
                 sed -i "s|image: ghcr.io/jaime-carbo/olas:.*|image: ghcr.io/jaime-carbo/olas:${{ github.sha }}|" apps/first-app.yaml
                 git config user.name "github-actions"
