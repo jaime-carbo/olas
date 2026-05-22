@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
 from print_function import print_function
 from base_template import get_template
+from lang_selector import get_lang_selector
 from bio import get_bio
 from header import get_header
 import numpy as np
@@ -11,8 +12,8 @@ import numpy as np
 app = FastAPI()
 
 @app.get("/")
-async def homepage():
-    return HTMLResponse(get_template().substitute(header=get_header().substitute(), bio=get_bio().substitute()))
+async def homepage(lang: str = "en"):
+    return HTMLResponse(get_template().substitute(header=get_header().substitute(), lang_selector=get_lang_selector(lang), bio=get_bio(lang)))
 
 async def generate_events(width=350, height=50):
     i = 0

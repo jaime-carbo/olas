@@ -1,23 +1,24 @@
 from string import Template
+from body_texts import get_text_by_name
 
-def get_bio():
+def get_bio(language: str = "en"):
     return Template(
-"""<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw;">
+    """<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw;">
     <div style="flex: 1; padding: 10px;">
         <h2>DATA ENGINEER</h2>
-        <p>Software Engineer with a passion for creating innovative solutions and exploring new technologies.</p>
+        <p>$par1</p>
     </div>
     <div style="width: 1px; background: #333;"></div>
     <div style="flex: 1; padding: 10px;">
-        <p>With a strong background in full-stack development, I enjoy building scalable applications and contributing to open-source projects.</p>
+        <p>$par2</p>
     </div>
     <div style="width: 1px; background: #333;"></div>
     <div style="flex: 1; padding: 10px;">
-        <p>In my free time, I love hiking, photography, and experimenting with new programming languages. I'm always eager to connect with like-minded individuals and collaborate on exciting projects.</p>
+        <p>$par3</p>
     </div>
     <div style="width: 1px; background: #333;"></div>
     <div style="flex: 1; padding: 10px;">
-        <p>Feel free to reach out to me on <a href="https://www.linkedin.com/in/jaimecarbosanchez" target="_blank">LinkedIn</a></p>
+        <p>$par4</p>
         <p>Window height: <span id="height-display"></span></p>
     </div>
     <script>
@@ -28,4 +29,4 @@ def get_bio():
     window.addEventListener("resize", updateHeightDisplay);
 </script>
 </div>
-""")
+""").substitute(par1=get_text_by_name("bio_par1", language), par2=get_text_by_name("bio_par2", language), par3=get_text_by_name("bio_par3", language), par4=get_text_by_name("bio_par4", language))

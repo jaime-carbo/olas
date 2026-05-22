@@ -7,6 +7,7 @@ def get_template():
 <!DOCTYPE html>
 <html>
 $header
+$lang_selector
 $bio
 </body>
 </html>
