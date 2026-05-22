@@ -1,8 +1,7 @@
 from string import Template
 
 def get_header():
-    return Template(
-"""<body>
+    return """<body>
 <pre id="text">----------</pre>
 <script>
     let es;
@@ -11,16 +10,16 @@ def get_header():
     function connect() {
     pageWidth = window.innerWidth;
     pageHeight = window.innerHeight;
-    es = new EventSource(`/events?width=$${pageWidth}&height=$${pageHeight}`);
-    es.onmessage = (e) => {
+    es = new EventSource(`/headerCurve?width=${pageWidth}&height=${pageHeight}&extra=JAIME CARBÓ SÁNCHEZ`);
+    es.addEventListener('message', (e) => {
         document.getElementById("text").textContent = e.data;
-    };
-    es.onerror = () => {
+    });
+    es.addEventListener('error', () => {
         document.getElementById("text").textContent = "Stream ended";
         es.close();
-    };
+    });
     }
     connect();
     window.addEventListener("resize", () => { es.close(); connect(); });
 </script>
-""")
+"""

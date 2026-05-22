@@ -29,4 +29,19 @@ def get_bio(language: str = "en"):
     window.addEventListener("resize", updateHeightDisplay);
 </script>
 </div>
+<pre id="bioCurve">----------</pre>
+<script>
+    function connectBio() {
+        bioCurveEvent = new EventSource(`/basicCurve?width=$${window.innerWidth}&height=4`);
+        bioCurveEvent.addEventListener('message', (e) => {
+            document.getElementById("bioCurve").textContent = e.data;
+        });
+        bioCurveEvent.addEventListener('error', () => {
+            document.getElementById("bioCurve").textContent = "Stream ended";
+            bioCurveEvent.close();
+        });
+    }
+    connectBio();
+    window.addEventListener("resize", () => { bioCurveEvent.close(); connectBio(); });
+</script>
 """).substitute(par1=get_text_by_name("bio_par1", language), par2=get_text_by_name("bio_par2", language), par3=get_text_by_name("bio_par3", language), par4=get_text_by_name("bio_par4", language))
