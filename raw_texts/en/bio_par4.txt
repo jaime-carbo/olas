@@ -1,1 +1,2 @@
-Feel free to reach out to me on LinkedIn.
+If you feel like I could be a good fit for your company, feel free to reach out to me on <a href="https://www.linkedin.com/in/jaime-carb%C3%B3-s%C3%A1nchez-573a47211">LinkedIn</a>.
+You can also check out the repository with this website's source code here <a href="https://github.com/jaime-carbo/olas">APP</a>, <a href="https://github.com/jaime-carbo/k8s-manifests/">Kubernetes manifests</a>.

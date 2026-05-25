@@ -1,1 +1,2 @@
-N'hésitez pas à me contacter sur LinkedIn.
+Si vous pensez que je pourrais être un bon ajout à votre entreprise, n'hésitez pas à me contacter sur <a href="https://www.linkedin.com/in/jaime-carb%C3%B3-s%C3%A1nchez-573a47211">LinkedIn</a>.
+Vous pouvez également consulter le dépôt contenant le code source de ce site ici : <a href="https://github.com/jaime-carbo/olas">APP</a>, <a href="https://github.com/jaime-carbo/k8s-manifests/">manifestes Kubernetes</a>.
