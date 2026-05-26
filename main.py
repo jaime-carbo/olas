@@ -7,13 +7,17 @@ from base_template import get_template
 from lang_selector import get_lang_selector
 from bio import get_bio
 from header import get_header
+from k8s_info import get_cluster_info
+from cluster_section import get_cluster_section
 import numpy as np
 
 app = FastAPI()
 
 @app.get("/")
 async def homepage(lang: str = "en"):
-    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang)))
+    cluster_info = await get_cluster_info()
+    cluster_html = get_cluster_section(cluster_info)
+    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html))
 
 @app.get("/headerCurve")
 async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = ""):  

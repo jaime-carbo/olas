@@ -9,6 +9,7 @@ def get_template():
 $header
 $lang_selector
 $bio
+$cluster
 </body>
 </html>
 """)
