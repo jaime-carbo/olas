@@ -1,5 +1,8 @@
+import os
 import kubernetes_asyncio
 from kubernetes_asyncio import client
+
+MOCK_MODE = os.environ.get("K8S_MOCK", "").lower() == "true"
 
 _config_loaded = False
 
@@ -36,6 +39,17 @@ def _parse_memory(value):
     return int(value)
 
 async def get_cluster_metrics():
+    if MOCK_MODE:
+        import random
+        cpu_allocatable = 2.0
+        mem_allocatable = 4096 * 1024 * 1024
+        return {
+            "cpu_used": round(random.uniform(0.15, 0.6), 3),
+            "cpu_allocatable": cpu_allocatable,
+            "mem_used": int(random.uniform(600, 1800) * 1024 * 1024),
+            "mem_allocatable": mem_allocatable,
+        }
+
     try:
         await _load_config()
         v1 = client.CoreV1Api()
