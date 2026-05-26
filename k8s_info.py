@@ -77,5 +77,6 @@ async def get_cluster_info():
         await custom.api_client.close()
 
         return {"nodes": nodes, "namespaces": namespaces, "pods": pods, "deployments": deployments}
-    except Exception:
+    except Exception as e:
+        print(f"CLUSTER INFO ERROR: {e}")
         return None
