@@ -57,7 +57,9 @@ async def generate_cluster_metrics():
             mem_used_mb = data["mem_used"] / (1024 * 1024)
             mem_total_mb = data["mem_allocatable"] / (1024 * 1024)
 
-            line = f"K8S │ CPU {cpu_bar} {cpu_used_m:.0f}m/{cpu_total_m:.0f}m │ MEM {mem_bar} {mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"
+            pod_info = f"{data['pod_name']} ({data['pod_age']})" if data["pod_age"] else data["pod_name"]
+
+            line = f"K8S │ {pod_info} │ CPU {cpu_bar} {cpu_used_m:.0f}m/{cpu_total_m:.0f}m │ MEM {mem_bar} {mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"
             yield {"data": line}
         await asyncio.sleep(5)
 

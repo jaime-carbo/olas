@@ -1,4 +1,6 @@
 import os
+import random
+from datetime import datetime, timezone, timedelta
 import kubernetes_asyncio
 from kubernetes_asyncio import client
 
@@ -38,12 +40,26 @@ def _parse_memory(value):
         return int(value[:-2]) * 1024 * 1024 * 1024
     return int(value)
 
+def _get_pod_namespace():
+    try:
+        return open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read().strip()
+    except Exception:
+        return "default"
+
+def _format_age(delta):
+    days = delta.days
+    hours, remainder = divmod(delta.seconds, 3600)
+    if days > 0:
+        return f"{days}d {hours}h"
+    return f"{hours}h"
+
 async def get_cluster_metrics():
     if MOCK_MODE:
-        import random
         cpu_allocatable = 2.0
         mem_allocatable = 4096 * 1024 * 1024
         return {
+            "pod_name": "demo-api-mock-abc123",
+            "pod_age": _format_age(timedelta(hours=random.randint(1, 72), minutes=random.randint(0, 59))),
             "cpu_used": round(random.uniform(0.15, 0.6), 3),
             "cpu_allocatable": cpu_allocatable,
             "mem_used": int(random.uniform(600, 1800) * 1024 * 1024),
@@ -72,10 +88,23 @@ async def get_cluster_metrics():
         except Exception:
             pass
 
+        pod_name = os.getenv("HOSTNAME", "unknown")
+        pod_age = ""
+        try:
+            namespace = _get_pod_namespace()
+            pod = await v1.read_namespaced_pod(name=pod_name, namespace=namespace)
+            if pod.status.start_time:
+                delta = datetime.now(timezone.utc) - pod.status.start_time
+                pod_age = _format_age(delta)
+        except Exception:
+            pass
+
         await v1.api_client.close()
         await custom.api_client.close()
 
         return {
+            "pod_name": pod_name,
+            "pod_age": pod_age,
             "cpu_used": round(cpu_used, 3),
             "cpu_allocatable": round(cpu_allocatable, 3),
             "mem_used": mem_used,

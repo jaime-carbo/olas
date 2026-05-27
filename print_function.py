@@ -43,15 +43,3 @@ def pick_symbol(pos, x, y, tolerance=1e-1):
     elif diff < -tolerance:
         return "\\"
     else:        return "-"
-
-
-# print('hola')
-
-# x = np.linspace(0, 10, 121)
-# print(x)
-
-# print(np.cos(x))
-
-# for i in range(1000):
-#     print_function(x, np.sin(np.cos(x + i * 0.1) + x), height=10)
-#     time.sleep(0.01)
