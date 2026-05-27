@@ -1,4 +1,5 @@
 import asyncio
+import json
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
@@ -15,7 +16,7 @@ app = FastAPI()
 
 @app.get("/")
 async def homepage(lang: str = "en"):
-    cluster_html = get_cluster_section()
+    cluster_html = get_cluster_section(lang)
     return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html))
 
 @app.get("/headerCurve")
@@ -40,7 +41,7 @@ async def generate_cluster_metrics():
     while True:
         data = await get_cluster_metrics()
         if data is None:
-            yield {"data": "K8S │ offline"}
+            yield {"data": json.dumps({"pod": "K8S │ offline", "cpu": "", "mem": ""})}
         else:
             def bar(pct, length=10):
                 filled = int(pct * length)
@@ -57,10 +58,11 @@ async def generate_cluster_metrics():
             mem_used_mb = data["mem_used"] / (1024 * 1024)
             mem_total_mb = data["mem_allocatable"] / (1024 * 1024)
 
-            pod_info = f"{data['pod_name']} ({data['pod_age']})" if data["pod_age"] else data["pod_name"]
+            pod_info = f"K8S │ {data['pod_name']} ({data['pod_age']})" if data["pod_age"] else f"K8S │ {data['pod_name']}"
+            cpu_line = f"CPU {cpu_bar} {cpu_used_m:.0f}m/{cpu_total_m:.0f}m"
+            mem_line = f"MEM {mem_bar} {mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"
 
-            line = f"K8S │ {pod_info} │ CPU {cpu_bar} {cpu_used_m:.0f}m/{cpu_total_m:.0f}m │ MEM {mem_bar} {mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"
-            yield {"data": line}
+            yield {"data": json.dumps({"pod": pod_info, "cpu": cpu_line, "mem": mem_line})}
         await asyncio.sleep(5)
 
 async def generate_curve_animation(math_function, width, height, direction=1, top_line="", bottom_line="", extra=""):
