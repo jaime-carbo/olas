@@ -9,10 +9,10 @@ def get_cluster_section(language: str = "en"):
         <p>$text</p>
     </div>
     <div style="width: 1px; background: #333;"></div>
-    <div style="flex: 3; padding: 10px;">
+    <div style="flex: 3; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
         <pre id="clusterPod" style="margin: 0;">K8S │ connecting...</pre>
-        <pre id="clusterCpu" style="margin: 0;">CPU ░░░░░░░░░░ 0m/0m</pre>
-        <pre id="clusterMem" style="margin: 0;">MEM ░░░░░░░░░░ 0Mi/0Mi</pre>
+        <pre id="clusterCpu" style="margin: 0; margin-top: 10px;">CPU ░░░░░░░░░░ 0m/0m</pre>
+        <pre id="clusterMem" style="margin: 0; margin-top: 10px;">MEM ░░░░░░░░░░ 0Mi/0Mi</pre>
     </div>
 </div>
 <script>
