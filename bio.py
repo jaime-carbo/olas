@@ -3,7 +3,7 @@ from body_texts import get_text_by_name
 
 def get_bio(language: str = "en"):
     return Template(
-    """<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw;">
+    """<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333;">
     <div style="flex: 1; padding: 10px;">
         <h2>DATA ENGINEER</h2>
         <p>$par1</p>
@@ -23,8 +23,17 @@ def get_bio(language: str = "en"):
 </div>
 <pre id="bioCurve">----------</pre>
 <script>
+    function measureBioChar() {
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = getComputedStyle(document.getElementById('bioCurve')).font;
+        const metrics = ctx.measureText('M');
+        const charWidth = metrics.width;
+        const charHeight = (metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent) * 5;
+        return { charWidth, charHeight };
+    }
     function connectBio() {
-        bioCurveEvent = new EventSource(`/basicCurve?width=$${window.innerWidth}&height=4`);
+        const { charWidth, charHeight } = measureBioChar();
+        bioCurveEvent = new EventSource(`/basicCurve?width=$${window.innerWidth}&height=$${4 * charHeight}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
         bioCurveEvent.addEventListener('message', (e) => {
             document.getElementById("bioCurve").textContent = e.data;
         });

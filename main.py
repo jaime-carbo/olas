@@ -20,18 +20,19 @@ async def homepage(lang: str = "en"):
     return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html))
 
 @app.get("/headerCurve")
-async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = ""):  
-    curve_width = int(width / 7.2)
-    curve_height = int(height / 80)
+async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):  
+    curve_width = max(1, int(width / charWidth))
+    curve_height = max(1, int(height / charHeight))
     math_function = lambda x: np.cos(x) + np.sin(3*x) + 1/2
     header_curve: str = generate_curve_animation(math_function, curve_width, curve_height, bottom_line=" -", extra=extra)
     return EventSourceResponse(header_curve)
 
 @app.get("/basicCurve")
-async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = ""):
+async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):
     math_function = lambda x: np.cos(x)
-    curve_width = int(width / 7.2)
-    return EventSourceResponse(generate_curve_animation(math_function, curve_width, height, direction=-1, extra=extra))
+    curve_width = max(1, int(width / charWidth))
+    curve_height = max(1, int(height / charHeight))
+    return EventSourceResponse(generate_curve_animation(math_function, curve_width, curve_height, direction=-1, extra=extra))
 
 @app.get("/clusterMetrics")
 async def cluster_metrics_endpoint():

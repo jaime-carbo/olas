@@ -7,7 +7,7 @@ def get_lang_selector(current_lang: str = "en"):
         border = "2px solid #333" if code == current_lang else "1px solid #999"
         bg = "#333" if code == current_lang else "transparent"
         color = "#fff" if code == current_lang else "#333"
-        links.append(f'<a href="/?lang={code}" style="display: inline-block; padding: 5px 15px; border: {border}; border-radius: 4px; text-decoration: none; font-family: \'Fira Code\', \'JetBrains Mono\', \'Cascadia Code\', \'Consolas\', monospace; font-size: 1.2vw; background: {bg}; color: {color};">{label}</a>')
+        links.append(f'<a href="/?lang={code}" style="display: inline-block; padding: 5px 15px; border: {border}; border-radius: 4px; text-decoration: none; background: {bg}; color: {color};">{label}</a>')
     links_html = " ".join(links)
     return f"""<div style="padding: 0px 10vw; margin-top: 10px; display: flex; gap: 10px;">
     {links_html}

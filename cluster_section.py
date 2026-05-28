@@ -4,7 +4,7 @@ from body_texts import get_text_by_name
 def get_cluster_section(language: str = "en"):
     text = get_text_by_name("cluster_metrics_par", language)
     return Template("""
-<div style="padding: 0px 10vw; margin-top: 20px; display: flex; border-radius: 5px; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw;">
+<div style="padding: 0px 10vw; margin-top: 20px; display: flex; border-radius: 5px;">
     <div style="flex: 7; padding: 10px;">
         <p>$text</p>
     </div>
