@@ -1,5 +1,6 @@
 import asyncio
 import json
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
@@ -11,8 +12,15 @@ from header import get_header
 from k8s_info import get_cluster_metrics
 from cluster_section import get_cluster_section
 import numpy as np
+import db
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await db.connect()
+    yield
+    await db.disconnect()
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def homepage(lang: str = "en"):
@@ -37,6 +45,22 @@ async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = 
 @app.get("/clusterMetrics")
 async def cluster_metrics_endpoint():
     return EventSourceResponse(generate_cluster_metrics())
+
+@app.get("/db-test")
+async def db_test():
+    database = db.get_db()
+    if database is None:
+        return {"status": "mock", "message": "No MONGODB_URI configured"}
+    try:
+        test_collection = database["test"]
+        await test_collection.insert_one({"hello": "world"})
+        doc = await test_collection.find_one({"hello": "world"})
+        await test_collection.delete_many({"hello": "world"})
+        if doc and doc.get("hello") == "world":
+            return {"status": "ok", "ping": "pong", "db": db.MONGODB_DB}
+        return {"status": "error", "message": "Document not found after insert"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 async def generate_cluster_metrics():
     while True:
