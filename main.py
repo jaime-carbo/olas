@@ -1,6 +1,7 @@
 import asyncio
 import json
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
@@ -61,6 +62,34 @@ async def db_test():
         return {"status": "error", "message": "Document not found after insert"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@app.post("/metrics")
+async def track_metrics(payload: dict):
+    database = db.get_db()
+    if database is None:
+        return {"status": "mock"}
+    try:
+        metric_type = payload.get("type")
+        section = payload.get("section")
+        session_id = payload.get("session_id")
+        now = datetime.now(timezone.utc)
+        if metric_type == "click":
+            await database["clicks"].insert_one({
+                "section": section,
+                "session_id": session_id,
+                "timestamp": now,
+            })
+        elif metric_type == "dwell":
+            await database["dwell"].insert_one({
+                "section": section,
+                "duration_ms": payload.get("duration_ms", 0),
+                "session_id": session_id,
+                "timestamp": now,
+            })
+        return {"status": "ok"}
+    except Exception as e:
+        print(f"METRICS ERROR: {e}")
+        return {"status": "error"}
 
 async def generate_cluster_metrics():
     while True:

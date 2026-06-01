@@ -26,7 +26,13 @@ async def connect():
         _client = AsyncIOMotorClient(MONGODB_URI)
         await _client.admin.command("ping")
         _db = _client[MONGODB_DB]
+        await _db["clicks"].create_index("timestamp")
+        await _db["clicks"].create_index("section")
+        await _db["dwell"].create_index("timestamp")
+        await _db["dwell"].create_index("section")
+        await _db["dwell"].create_index("session_id")
         print(f"DB | connected to {MONGODB_URI}")
+        print("DB | indexes ready")
     except Exception as e:
         _client = None
         _db = None

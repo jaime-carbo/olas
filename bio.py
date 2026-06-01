@@ -3,7 +3,8 @@ from body_texts import get_text_by_name
 
 def get_bio(language: str = "en"):
     return Template(
-    """<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333;">
+    """<div data-track="bio">
+<div style="margin-top: 0px; padding: 0px 10vw; display: flex; border-radius: 5px; border: 0px solid #333;">
     <div style="flex: 1; padding: 10px;">
         <h2>DATA ENGINEER</h2>
         <p>$par1</p>
@@ -45,4 +46,5 @@ def get_bio(language: str = "en"):
     connectBio();
     window.addEventListener("resize", () => { bioCurveEvent.close(); connectBio(); });
 </script>
+</div>
 """).substitute(par1=get_text_by_name("bio_par1", language), par2=get_text_by_name("bio_par2", language), par3=get_text_by_name("bio_par3", language), par4=get_text_by_name("bio_par4", language))

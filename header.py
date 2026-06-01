@@ -2,6 +2,7 @@ from string import Template
 
 def get_header():
     return """<body>
+<div data-track="header">
 <pre id="text">----------</pre>
 <script>
     let es;
@@ -31,4 +32,5 @@ def get_header():
     connect();
     window.addEventListener("resize", () => { es.close(); connect(); });
 </script>
+</div>
 """
