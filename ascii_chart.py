@@ -32,14 +32,3 @@ def create_chart(x, y, height=250, x_legend_values=[]):
     curve = np.vstack((curve, x_legend)) 
     return "\n".join(["".join(e) for e in curve])
 
-
-start = "16/10/2026-12:00:00"
-end = "01/12/2026-00:00:10"
-i = 0
-while True:
-    x = np.linspace(-0.5+i, 0.5+i, 270)
-    y = np.cos(x**2)
-    create_chart(x, y, height=45, x_legend_values=[start, end])
-    i+=0.01
-    time.sleep(0.005)
-
