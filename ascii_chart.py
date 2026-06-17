@@ -30,7 +30,7 @@ def create_chart(x, y, height=250, x_legend_values=[]):
     x_legend = [first_space]+[start]+[" "]*(len(curve[-1])-2)
     x_legend[-x_legend_width] = end
     curve = np.vstack((curve, x_legend)) 
-    print("\n".join(["".join(e) for e in curve]))
+    return "\n".join(["".join(e) for e in curve])
 
 
 start = "16/10/2026-12:00:00"
