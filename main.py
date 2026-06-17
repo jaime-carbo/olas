@@ -12,6 +12,7 @@ from bio import get_bio
 from header import get_header
 from k8s_info import get_cluster_metrics
 from cluster_section import get_cluster_section
+from mongodb_section import get_mongodb_section
 import numpy as np
 import db
 
@@ -26,7 +27,8 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/")
 async def homepage(lang: str = "en"):
     cluster_html = get_cluster_section(lang)
-    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html))
+    mongodb_html = get_mongodb_section(lang)
+    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html, mongodb=mongodb_html))
 
 @app.get("/headerCurve")
 async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):  
@@ -46,6 +48,10 @@ async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = 
 @app.get("/clusterMetrics")
 async def cluster_metrics_endpoint():
     return EventSourceResponse(generate_cluster_metrics())
+
+@app.get("/mongoMetrics")
+async def mongo_metrics_endpoint():
+    return EventSourceResponse(generate_mongo_metrics())
 
 @app.get("/db-test")
 async def db_test():
@@ -117,6 +123,32 @@ async def generate_cluster_metrics():
             mem_line = f"MEM {mem_bar} {mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"
 
             yield {"data": json.dumps({"pod": pod_info, "cpu": cpu_line, "mem": mem_line})}
+        await asyncio.sleep(5)
+
+async def generate_mongo_metrics():
+    while True:
+        database = db.get_db()
+        if database is None:
+            yield {"data": json.dumps({"status": "MDB │ mock mode", "clicks": "", "dwell": ""})}
+        else:
+            try:
+                click_count = await database["clicks"].count_documents({})
+                dwell_count = await database["dwell"].count_documents({})
+
+                def bar(pct, length=10):
+                    filled = int(pct * length)
+                    return "▓" * filled + "░" * (length - filled)
+
+                click_bar = bar(min(click_count / 50, 1.0))
+                dwell_bar = bar(min(dwell_count / 100, 1.0))
+
+                status_line = "MDB │ online"
+                clicks_line = f"CLK {click_bar} {click_count} clicks"
+                dwell_line = f"DWL {dwell_bar} {dwell_count} records"
+
+                yield {"data": json.dumps({"status": status_line, "clicks": clicks_line, "dwell": dwell_line})}
+            except Exception:
+                yield {"data": json.dumps({"status": "MDB │ error", "clicks": "", "dwell": ""})}
         await asyncio.sleep(5)
 
 async def generate_curve_animation(math_function, width, height, direction=1, top_line="", bottom_line="", extra=""):
