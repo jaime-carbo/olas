@@ -28,7 +28,7 @@ def get_mongodb_section(language: str = "en"):
         const { charWidth, charHeight } = measureMongoChar();
         const container = document.getElementById("mongoClicksChart").parentElement;
         const width = container.clientWidth;
-        clicksEs = new EventSource(`/mongoClicksChart?width=${width}&height=${charHeight * 5}&charWidth=${charWidth}&charHeight=${charHeight}`);
+        clicksEs = new EventSource(`/mongoClicksChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
         clicksEs.addEventListener('message', (e) => {
             document.getElementById("mongoClicksChart").textContent = e.data;
         });
@@ -41,7 +41,7 @@ def get_mongodb_section(language: str = "en"):
         const { charWidth, charHeight } = measureMongoChar();
         const container = document.getElementById("mongoDwellChart").parentElement;
         const width = container.clientWidth;
-        dwellEs = new EventSource(`/mongoDwellChart?width=${width}&height=${charHeight * 5}&charWidth=${charWidth}&charHeight=${charHeight}`);
+        dwellEs = new EventSource(`/mongoDwellChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
         dwellEs.addEventListener('message', (e) => {
             document.getElementById("mongoDwellChart").textContent = e.data;
         });

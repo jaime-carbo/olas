@@ -27,8 +27,12 @@ def create_chart(x, y, height=250, x_legend_values=[]):
         start = "↑"+x_legend_values[0]
         end = "↑"+x_legend_values[1]
     x_legend_width = max(len(start), len(end))
-    x_legend = [first_space]+[start]+[" "]*(len(curve[-1])-2)
+    min_legend_len = max(len(curve[-1]), x_legend_width + 1)
+    x_legend = [first_space]+[start]+[" "]*(min_legend_len-2)
     x_legend[-x_legend_width] = end
+    pad_width = min_legend_len - len(curve[-1])
+    if pad_width > 0:
+        curve = np.pad(curve, ((0,0),(0,pad_width)), constant_values=" ")
     curve = np.vstack((curve, x_legend)) 
     return "\n".join(["".join(e) for e in curve])
 

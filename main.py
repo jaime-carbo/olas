@@ -151,12 +151,13 @@ async def generate_mongo_clicks_chart(width, height):
                     yield {"data": "CLK │ waiting for data..."}
                 else:
                     labels = [r["_id"] for r in results]
-                    values = [r["count"] for r in results]
+                    values = [float(r["count"]) for r in results]
                     y = np.array(values, dtype=float)
                     x = np.linspace(0, 10, len(y))
                     chart = create_chart(x, y, height=height, x_legend_values=[labels[0], labels[-1]])
                     yield {"data": chart}
-            except Exception:
+            except Exception as e:
+                print(f"CLICKS CHART ERROR: {e}")
                 yield {"data": "CLK │ error"}
         await asyncio.sleep(30)
 
@@ -177,12 +178,13 @@ async def generate_mongo_dwell_chart(width, height):
                     yield {"data": "DWL │ waiting for data..."}
                 else:
                     labels = [r["_id"] for r in results]
-                    values = [r["avg_ms"] / 1000 for r in results]
+                    values = [float(r["avg_ms"]) / 1000 for r in results]
                     y = np.array(values, dtype=float)
                     x = np.linspace(0, 10, len(y))
                     chart = create_chart(x, y, height=height, x_legend_values=[labels[0], labels[-1]])
                     yield {"data": chart}
-            except Exception:
+            except Exception as e:
+                print(f"DWELL CHART ERROR: {e}")
                 yield {"data": "DWL │ error"}
         await asyncio.sleep(30)
 
