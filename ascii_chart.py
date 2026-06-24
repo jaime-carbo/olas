@@ -142,13 +142,17 @@ def create_bar_chart(y, height=10, x_legend_values=[], width=80, title=""):
     return "\n".join(["".join(title_row)] + chart_lines)
 
 
-def create_horizontal_bar_chart(labels, values, width=80, title="", unit="", display=None, subtitle=""):
+def create_horizontal_bar_chart(labels, values, width=80, title="", unit="", display=None, subtitle="", maxes=None):
     n = len(labels)
     if n == 0:
         return ""
 
     max_label = max(len(str(l)) for l in labels)
-    maximum = max(values) if max(values) > 0 else 1
+    if maxes is not None:
+        denominators = [m if m > 0 else 1 for m in maxes]
+    else:
+        maximum = max(values) if max(values) > 0 else 1
+        denominators = [maximum] * n
 
     # Layout: "label │ bar value unit"
     # label field = max_label + 1 space, separator "│ ", value field estimated
@@ -171,7 +175,7 @@ def create_horizontal_bar_chart(labels, values, width=80, title="", unit="", dis
     lines.append(top_border)
     for i in range(n):
         label = str(labels[i]).ljust(label_field)
-        bar_len = int((values[i] / maximum) * available_bar)
+        bar_len = int((values[i] / denominators[i]) * available_bar)
         bar = "█" * bar_len + "░" * (available_bar - bar_len)
         val = value_strs[i].rjust(value_field)
         lines.append(f"{label}{sep}{bar} {val}")

@@ -124,7 +124,7 @@ async def generate_cluster_metrics(width):
             labels = ["CPU", "MEM"]
             values = [cpu_pct * 100, mem_pct * 100]
             display = [f"{cpu_used_m:.0f}m/{cpu_total_m:.0f}m", f"{mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"]
-            chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display)
+            chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display, maxes=[100, 100])
             yield {"data": chart}
         await asyncio.sleep(5)
 
