@@ -6,7 +6,12 @@ def get_template():
 """
 <!DOCTYPE html>
 <html>
-<head><style>html { height: 100%; } body { min-height: 100vh; overflow-y: auto; margin: 0; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw; } pre { font-family: inherit; font-size: inherit; }</style></head>
+<head>
+    <meta charset="utf-8">
+    <title>Jaime Carbó — Data Engineer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23111'/><path d='M2 16 Q8 4 14 16 T26 16 T30 16' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/></svg>">
+    <style>html { height: 100%; } body { min-height: 100vh; overflow-y: auto; margin: 0; font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 1.2vw; } pre { font-family: inherit; font-size: inherit; }</style>
+</head>
 $header
 $lang_selector
 $bio
