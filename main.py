@@ -55,7 +55,7 @@ async def resource_curve_endpoint(width: int = 350, height: int = 50, extra: str
     math_function = lambda x: np.sin(x) + np.cos(2*x) / 2
     curve_width = max(1, int(width / charWidth))
     curve_height = max(1, int(height / charHeight))
-    return EventSourceResponse(generate_curve_animation(math_function, curve_width, curve_height, direction=-1))
+    return EventSourceResponse(generate_curve_animation(math_function, curve_width, curve_height, direction=1))
 
 @app.get("/clusterMetrics")
 async def cluster_metrics_endpoint(width: int = 200, charWidth: float = 7.2):

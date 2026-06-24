@@ -17,6 +17,7 @@ $lang_selector
 $bio
 $cluster
 $mongodb
+<div style="padding: 0px 10vw; margin-top: 20px;"><hr style="border: none; border-top: 1px solid #333; margin: 0;"></div>
 $resource_history
 <script>
     (function() {
