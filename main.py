@@ -152,12 +152,8 @@ async def generate_mongo_clicks_chart(width, height):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["count"]) for r in results]
-                    max_bars = max(1, (width - 10) // 3)
-                    if len(values) > max_bars:
-                        labels = labels[-max_bars:]
-                        values = values[-max_bars:]
                     y = np.array(values, dtype=float)
-                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]])
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title="CLK")
                     yield {"data": chart}
             except Exception as e:
                 print(f"CLICKS CHART ERROR: {e}")
@@ -182,12 +178,8 @@ async def generate_mongo_dwell_chart(width, height):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["avg_ms"]) / 1000 for r in results]
-                    max_bars = max(1, (width - 10) // 3)
-                    if len(values) > max_bars:
-                        labels = labels[-max_bars:]
-                        values = values[-max_bars:]
                     y = np.array(values, dtype=float)
-                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]])
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title="DWL")
                     yield {"data": chart}
             except Exception as e:
                 print(f"DWELL CHART ERROR: {e}")
