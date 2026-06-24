@@ -1,0 +1,1 @@
+The resource metrics shown above are also persisted to MongoDB every 30 seconds. Here you can see the historical CPU and memory usage over the last 24 hours, aggregated hourly. The infrastructure story of this site, stored in the same database as your visit.

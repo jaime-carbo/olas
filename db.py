@@ -31,6 +31,7 @@ async def connect():
         await _db["dwell"].create_index("timestamp")
         await _db["dwell"].create_index("section")
         await _db["dwell"].create_index("session_id")
+        await _db["cluster_metrics"].create_index("timestamp", expireAfterSeconds=604800)
         print(f"DB | connected to {MONGODB_URI}")
         print("DB | indexes ready")
     except Exception as e:

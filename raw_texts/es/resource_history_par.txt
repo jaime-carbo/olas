@@ -1,0 +1,1 @@
+Las métricas de recursos mostradas arriba también se guardan en MongoDB cada 30 segundos. Aquí puedes ver el histórico de uso de CPU y memoria de las últimas 24 horas, agregado por hora. La historia de la infraestructura de este sitio, almacenada en la misma base de datos que tu visita.

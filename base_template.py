@@ -17,6 +17,7 @@ $lang_selector
 $bio
 $cluster
 $mongodb
+$resource_history
 <script>
     (function() {
         const sessionId = crypto.randomUUID();

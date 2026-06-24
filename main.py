@@ -1,11 +1,11 @@
 import asyncio
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
 from print_function import print_function
-from ascii_chart import create_horizontal_bar_chart
+from ascii_chart import create_horizontal_bar_chart, create_bar_chart
 from base_template import get_template
 from lang_selector import get_lang_selector
 from bio import get_bio
@@ -13,6 +13,7 @@ from header import get_header
 from k8s_info import get_cluster_metrics
 from cluster_section import get_cluster_section
 from mongodb_section import get_mongodb_section
+from resource_section import get_resource_section
 from body_texts import get_text_by_name
 import numpy as np
 import db
@@ -31,7 +32,8 @@ app = FastAPI(lifespan=lifespan)
 async def homepage(lang: str = "en"):
     cluster_html = get_cluster_section(lang)
     mongodb_html = get_mongodb_section(lang)
-    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html, mongodb=mongodb_html))
+    resource_html = get_resource_section(lang)
+    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html, mongodb=mongodb_html, resource_history=resource_html))
 
 @app.get("/headerCurve")
 async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):  
@@ -52,6 +54,18 @@ async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = 
 async def cluster_metrics_endpoint(width: int = 200, charWidth: float = 7.2):
     chart_width = max(1, int(width / charWidth))
     return EventSourceResponse(generate_cluster_metrics(chart_width))
+
+@app.get("/clusterCpuHistory")
+async def cluster_cpu_history_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
+    chart_width = max(1, int(width / charWidth))
+    chart_height = max(1, int(height / charHeight))
+    return EventSourceResponse(generate_cluster_history_chart(chart_width, chart_height, "cpu"))
+
+@app.get("/clusterMemHistory")
+async def cluster_mem_history_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
+    chart_width = max(1, int(width / charWidth))
+    chart_height = max(1, int(height / charHeight))
+    return EventSourceResponse(generate_cluster_history_chart(chart_width, chart_height, "mem"))
 
 @app.get("/mongoLangChart")
 async def mongo_lang_chart_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
@@ -108,6 +122,7 @@ async def track_metrics(payload: dict):
         return {"status": "error"}
 
 async def generate_cluster_metrics(width):
+    poll_count = 0
     while True:
         data = await get_cluster_metrics()
         if data is None:
@@ -115,6 +130,21 @@ async def generate_cluster_metrics(width):
         else:
             cpu_pct = data["cpu_used"] / data["cpu_allocatable"] if data["cpu_allocatable"] > 0 else 0
             mem_pct = data["mem_used"] / data["mem_allocatable"] if data["mem_allocatable"] > 0 else 0
+
+            if poll_count % 6 == 0:
+                database = db.get_db()
+                if database is not None:
+                    try:
+                        await database["cluster_metrics"].insert_one({
+                            "pod_name": data["pod_name"],
+                            "cpu_used": data["cpu_used"],
+                            "cpu_allocatable": data["cpu_allocatable"],
+                            "mem_used": data["mem_used"],
+                            "mem_allocatable": data["mem_allocatable"],
+                            "timestamp": datetime.now(timezone.utc),
+                        })
+                    except Exception as e:
+                        print(f"CLUSTER METRICS STORAGE ERROR: {e}")
 
             cpu_used_m = data["cpu_used"] * 1000
             cpu_total_m = data["cpu_allocatable"] * 1000
@@ -128,7 +158,39 @@ async def generate_cluster_metrics(width):
             display = [f"{cpu_used_m:.0f}m/{cpu_total_m:.0f}m", f"{mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"]
             chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display, maxes=[100, 100], label_width=LABEL_WIDTH)
             yield {"data": chart}
+        poll_count += 1
         await asyncio.sleep(5)
+
+async def generate_cluster_history_chart(width, height, metric):
+    title = "CPU" if metric == "cpu" else "MEM"
+    prefix = "CPU" if metric == "cpu" else "MEM"
+    while True:
+        database = db.get_db()
+        if database is None:
+            yield {"data": f"{prefix} │ mock mode"}
+        else:
+            try:
+                now = datetime.now(timezone.utc)
+                pipeline = [
+                    {"$match": {"timestamp": {"$gte": now - timedelta(hours=24)}}},
+                    {"$group": {"_id": {"$dateToString": {"format": "%H:00", "date": "$timestamp"}},
+                                "avg_used": {"$avg": f"${metric}_used"},
+                                "avg_allocatable": {"$avg": f"${metric}_allocatable"}}},
+                    {"$sort": {"_id": 1}}
+                ]
+                results = await database["cluster_metrics"].aggregate(pipeline).to_list(length=None)
+                if not results:
+                    yield {"data": f"{prefix} │ waiting for data..."}
+                else:
+                    labels = [r["_id"] for r in results]
+                    values = [(r["avg_used"] / r["avg_allocatable"] * 100) if r["avg_allocatable"] > 0 else 0 for r in results]
+                    y = np.array(values, dtype=float)
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title=title)
+                    yield {"data": chart}
+            except Exception as e:
+                print(f"{title} HISTORY CHART ERROR: {e}")
+                yield {"data": f"{prefix} │ error"}
+        await asyncio.sleep(30)
 
 async def generate_mongo_lang_chart(width):
     while True:
