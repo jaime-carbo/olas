@@ -22,7 +22,7 @@ def get_cluster_section(language: str = "en"):
         const charWidth = metrics.width;
         const container = document.getElementById("clusterChart").parentElement;
         const width = container.clientWidth;
-        clusterEs = new EventSource(`/clusterMetrics?width=${width}&charWidth=${charWidth}`);
+        clusterEs = new EventSource(`/clusterMetrics?width=$${width}&charWidth=$${charWidth}`);
         clusterEs.addEventListener('message', (e) => {
             document.getElementById("clusterChart").textContent = e.data;
         });
