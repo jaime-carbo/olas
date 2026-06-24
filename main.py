@@ -17,6 +17,8 @@ from body_texts import get_text_by_name
 import numpy as np
 import db
 
+LABEL_WIDTH = 10
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await db.connect()
@@ -124,7 +126,7 @@ async def generate_cluster_metrics(width):
             labels = ["CPU", "MEM"]
             values = [cpu_pct * 100, mem_pct * 100]
             display = [f"{cpu_used_m:.0f}m/{cpu_total_m:.0f}m", f"{mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"]
-            chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display, maxes=[100, 100])
+            chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display, maxes=[100, 100], label_width=LABEL_WIDTH)
             yield {"data": chart}
         await asyncio.sleep(5)
 
@@ -146,7 +148,7 @@ async def generate_mongo_lang_chart(width):
                 else:
                     labels = [r["_id"].replace("lang_", "").upper() for r in results]
                     values = [float(r["count"]) for r in results]
-                    chart = create_horizontal_bar_chart(labels, values, width=width, title="LANG", unit=" clicks")
+                    chart = create_horizontal_bar_chart(labels, values, width=width, title="LANG", unit=" clicks", label_width=LABEL_WIDTH)
                     yield {"data": chart}
             except Exception as e:
                 print(f"LANG CHART ERROR: {e}")
@@ -171,7 +173,7 @@ async def generate_mongo_sections_chart(width, lang="en"):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["avg_ms"]) / 1000 for r in results]
-                    chart = create_horizontal_bar_chart(labels, values, width=width, title="SECTIONS", unit="s", subtitle=subtitle)
+                    chart = create_horizontal_bar_chart(labels, values, width=width, title="SECTIONS", unit="s", subtitle=subtitle, label_width=LABEL_WIDTH)
                     yield {"data": chart}
             except Exception as e:
                 print(f"SECTIONS CHART ERROR: {e}")
