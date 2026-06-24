@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
 from print_function import print_function
-from ascii_chart import create_chart
+from ascii_chart import create_bar_chart
 from base_template import get_template
 from lang_selector import get_lang_selector
 from bio import get_bio
@@ -152,9 +152,12 @@ async def generate_mongo_clicks_chart(width, height):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["count"]) for r in results]
+                    max_bars = max(1, (width - 10) // 3)
+                    if len(values) > max_bars:
+                        labels = labels[-max_bars:]
+                        values = values[-max_bars:]
                     y = np.array(values, dtype=float)
-                    x = np.linspace(0, 10, len(y))
-                    chart = create_chart(x, y, height=height, x_legend_values=[labels[0], labels[-1]])
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]])
                     yield {"data": chart}
             except Exception as e:
                 print(f"CLICKS CHART ERROR: {e}")
@@ -179,9 +182,12 @@ async def generate_mongo_dwell_chart(width, height):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["avg_ms"]) / 1000 for r in results]
+                    max_bars = max(1, (width - 10) // 3)
+                    if len(values) > max_bars:
+                        labels = labels[-max_bars:]
+                        values = values[-max_bars:]
                     y = np.array(values, dtype=float)
-                    x = np.linspace(0, 10, len(y))
-                    chart = create_chart(x, y, height=height, x_legend_values=[labels[0], labels[-1]])
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]])
                     yield {"data": chart}
             except Exception as e:
                 print(f"DWELL CHART ERROR: {e}")
