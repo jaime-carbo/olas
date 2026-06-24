@@ -41,7 +41,7 @@ def get_mongodb_section(language: str = "en"):
         const { charWidth, charHeight } = measureMongoChar();
         const container = document.getElementById("mongoSectionsChart").parentElement;
         const width = container.clientWidth;
-        sectionsEs = new EventSource(`/mongoSectionsChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
+        sectionsEs = new EventSource(`/mongoSectionsChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}&lang=$language`);
         sectionsEs.addEventListener('message', (e) => {
             document.getElementById("mongoSectionsChart").textContent = e.data;
         });
@@ -54,4 +54,4 @@ def get_mongodb_section(language: str = "en"):
     connectMongoSections();
 </script>
 </div>
-""").substitute(text=text)
+""").substitute(text=text, language=language)

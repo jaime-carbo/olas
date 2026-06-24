@@ -11,24 +11,23 @@ def get_cluster_section(language: str = "en"):
     </div>
     <div style="width: 1px; background: #333;"></div>
     <div style="flex: 3; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
-        <pre id="clusterPod" style="margin: 0;">K8S │ connecting...</pre>
-        <pre id="clusterCpu" style="margin: 0; margin-top: 10px;">CPU ░░░░░░░░░░ 0m/0m</pre>
-        <pre id="clusterMem" style="margin: 0; margin-top: 10px;">MEM ░░░░░░░░░░ 0Mi/0Mi</pre>
+        <pre id="clusterChart" style="margin: 0; font-size: 0.8vw;">K8S │ connecting...</pre>
     </div>
 </div>
 <script>
     function connectCluster() {
-        clusterEs = new EventSource('/clusterMetrics');
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = getComputedStyle(document.getElementById("clusterChart")).font;
+        const metrics = ctx.measureText('M');
+        const charWidth = metrics.width;
+        const container = document.getElementById("clusterChart").parentElement;
+        const width = container.clientWidth;
+        clusterEs = new EventSource(`/clusterMetrics?width=${width}&charWidth=${charWidth}`);
         clusterEs.addEventListener('message', (e) => {
-            var data = JSON.parse(e.data);
-            document.getElementById("clusterPod").textContent = data.pod;
-            document.getElementById("clusterCpu").textContent = data.cpu;
-            document.getElementById("clusterMem").textContent = data.mem;
+            document.getElementById("clusterChart").textContent = e.data;
         });
         clusterEs.addEventListener('error', () => {
-            document.getElementById("clusterPod").textContent = "K8S │ offline";
-            document.getElementById("clusterCpu").textContent = "";
-            document.getElementById("clusterMem").textContent = "";
+            document.getElementById("clusterChart").textContent = "K8S │ offline";
             clusterEs.close();
         });
     }
