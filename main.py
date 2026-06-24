@@ -50,6 +50,13 @@ async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = 
     curve_height = max(1, int(height / charHeight))
     return EventSourceResponse(generate_curve_animation(math_function, curve_width, curve_height, direction=-1, extra=extra))
 
+@app.get("/resourceCurve")
+async def resource_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):
+    math_function = lambda x: np.sin(x) + np.cos(2*x) / 2
+    curve_width = max(1, int(width / charWidth))
+    curve_height = max(1, int(height / charHeight))
+    return EventSourceResponse(generate_curve_animation(math_function, curve_width, curve_height, direction=-1))
+
 @app.get("/clusterMetrics")
 async def cluster_metrics_endpoint(width: int = 200, charWidth: float = 7.2):
     chart_width = max(1, int(width / charWidth))
@@ -162,7 +169,7 @@ async def generate_cluster_metrics(width):
         await asyncio.sleep(5)
 
 async def generate_cluster_history_chart(width, height, metric):
-    title = "CPU" if metric == "cpu" else "MEM"
+    title = "CPU %" if metric == "cpu" else "MEM %"
     prefix = "CPU" if metric == "cpu" else "MEM"
     while True:
         database = db.get_db()

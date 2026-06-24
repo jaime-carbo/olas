@@ -9,15 +9,14 @@ def get_resource_section(language: str = "en"):
     <div style="flex: 3; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
         <pre id="cpuHistoryChart" style="margin: 0; font-size: 0.8vw;">CPU │ loading...</pre>
     </div>
-    <div style="width: 1px; background: #333;"></div>
     <div style="flex: 4; padding: 10px;">
         <p>$text</p>
     </div>
-    <div style="width: 1px; background: #333;"></div>
     <div style="flex: 3; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
         <pre id="memHistoryChart" style="margin: 0; font-size: 0.8vw;">MEM │ loading...</pre>
     </div>
 </div>
+<pre id="resourceCurve">----------</pre>
 <script>
     function measureHistoryChar() {
         const ctx = document.createElement('canvas').getContext('2d');
@@ -53,8 +52,29 @@ def get_resource_section(language: str = "en"):
             memHistoryEs.close();
         });
     }
+    function measureResourceCurveChar() {
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = getComputedStyle(document.getElementById('resourceCurve')).font;
+        const metrics = ctx.measureText('M');
+        const charWidth = metrics.width;
+        const charHeight = (metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent) * 5;
+        return { charWidth, charHeight };
+    }
+    function connectResourceCurve() {
+        const { charWidth, charHeight } = measureResourceCurveChar();
+        resourceCurveEvent = new EventSource(`/resourceCurve?width=$${window.innerWidth}&height=$${4 * charHeight}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
+        resourceCurveEvent.addEventListener('message', (e) => {
+            document.getElementById("resourceCurve").textContent = e.data;
+        });
+        resourceCurveEvent.addEventListener('error', () => {
+            document.getElementById("resourceCurve").textContent = "Stream ended";
+            resourceCurveEvent.close();
+        });
+    }
     connectCpuHistory();
     connectMemHistory();
+    connectResourceCurve();
+    window.addEventListener("resize", () => { resourceCurveEvent.close(); connectResourceCurve(); });
 </script>
 </div>
 """).substitute(text=text)
