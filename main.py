@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
 from print_function import print_function
-from ascii_chart import create_bar_chart
+from ascii_chart import create_horizontal_bar_chart
 from base_template import get_template
 from lang_selector import get_lang_selector
 from bio import get_bio
@@ -50,17 +50,15 @@ async def basic_curve_endpoint(width: int = 350, height: int = 50, extra: str = 
 async def cluster_metrics_endpoint():
     return EventSourceResponse(generate_cluster_metrics())
 
-@app.get("/mongoClicksChart")
-async def mongo_clicks_chart_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
-    curve_width = max(1, int(width / charWidth))
-    curve_height = max(1, int(height / charHeight))
-    return EventSourceResponse(generate_mongo_clicks_chart(curve_width, curve_height))
+@app.get("/mongoLangChart")
+async def mongo_lang_chart_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
+    chart_width = max(1, int(width / charWidth))
+    return EventSourceResponse(generate_mongo_lang_chart(chart_width))
 
-@app.get("/mongoDwellChart")
-async def mongo_dwell_chart_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
-    curve_width = max(1, int(width / charWidth))
-    curve_height = max(1, int(height / charHeight))
-    return EventSourceResponse(generate_mongo_dwell_chart(curve_width, curve_height))
+@app.get("/mongoSectionsChart")
+async def mongo_sections_chart_endpoint(width: int = 200, height: int = 50, charWidth: float = 7.2, charHeight: float = 80):
+    chart_width = max(1, int(width / charWidth))
+    return EventSourceResponse(generate_mongo_sections_chart(chart_width))
 
 @app.get("/db-test")
 async def db_test():
@@ -134,56 +132,53 @@ async def generate_cluster_metrics():
             yield {"data": json.dumps({"pod": pod_info, "cpu": cpu_line, "mem": mem_line})}
         await asyncio.sleep(5)
 
-async def generate_mongo_clicks_chart(width, height):
+async def generate_mongo_lang_chart(width):
     while True:
         database = db.get_db()
         if database is None:
-            yield {"data": "CLK │ mock mode"}
+            yield {"data": "LANG │ mock mode"}
         else:
             try:
                 pipeline = [
-                    {"$sort": {"timestamp": 1}},
-                    {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}}, "count": {"$sum": 1}}},
-                    {"$sort": {"_id": 1}}
+                    {"$match": {"section": {"$regex": "^lang_"}}},
+                    {"$group": {"_id": "$section", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}}
                 ]
                 results = await database["clicks"].aggregate(pipeline).to_list(length=None)
-                if len(results) < 2:
-                    yield {"data": "CLK │ waiting for data..."}
+                if not results:
+                    yield {"data": "LANG │ waiting for data..."}
                 else:
-                    labels = [r["_id"] for r in results]
+                    labels = [r["_id"].replace("lang_", "").upper() for r in results]
                     values = [float(r["count"]) for r in results]
-                    y = np.array(values, dtype=float)
-                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title="CLK")
+                    chart = create_horizontal_bar_chart(labels, values, width=width, title="LANG", unit=" clicks")
                     yield {"data": chart}
             except Exception as e:
-                print(f"CLICKS CHART ERROR: {e}")
-                yield {"data": "CLK │ error"}
+                print(f"LANG CHART ERROR: {e}")
+                yield {"data": "LANG │ error"}
         await asyncio.sleep(30)
 
-async def generate_mongo_dwell_chart(width, height):
+async def generate_mongo_sections_chart(width):
     while True:
         database = db.get_db()
         if database is None:
-            yield {"data": "DWL │ mock mode"}
+            yield {"data": "SECT │ mock mode"}
         else:
             try:
                 pipeline = [
-                    {"$sort": {"timestamp": 1}},
-                    {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}}, "avg_ms": {"$avg": "$duration_ms"}}},
-                    {"$sort": {"_id": 1}}
+                    {"$group": {"_id": "$section", "avg_ms": {"$avg": "$duration_ms"}}},
+                    {"$sort": {"avg_ms": -1}}
                 ]
                 results = await database["dwell"].aggregate(pipeline).to_list(length=None)
-                if len(results) < 2:
-                    yield {"data": "DWL │ waiting for data..."}
+                if not results:
+                    yield {"data": "SECT │ waiting for data..."}
                 else:
                     labels = [r["_id"] for r in results]
                     values = [float(r["avg_ms"]) / 1000 for r in results]
-                    y = np.array(values, dtype=float)
-                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title="DWL")
+                    chart = create_horizontal_bar_chart(labels, values, width=width, title="SECTIONS", unit="s")
                     yield {"data": chart}
             except Exception as e:
-                print(f"DWELL CHART ERROR: {e}")
-                yield {"data": "DWL │ error"}
+                print(f"SECTIONS CHART ERROR: {e}")
+                yield {"data": "SECT │ error"}
         await asyncio.sleep(30)
 
 async def generate_curve_animation(math_function, width, height, direction=1, top_line="", bottom_line="", extra=""):

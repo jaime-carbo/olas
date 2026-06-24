@@ -140,3 +140,37 @@ def create_bar_chart(y, height=10, x_legend_values=[], width=80, title=""):
     title_row = list(title.ljust(chart_width))
 
     return "\n".join(["".join(title_row)] + chart_lines)
+
+
+def create_horizontal_bar_chart(labels, values, width=80, title="", unit=""):
+    n = len(labels)
+    if n == 0:
+        return ""
+
+    max_label = max(len(str(l)) for l in labels)
+    maximum = max(values) if max(values) > 0 else 1
+
+    # Layout: "label │ bar value unit"
+    # label field = max_label + 1 space, separator "│ ", value field estimated
+    value_strs = [f"{v:.1f}{unit}" for v in values]
+    max_value_len = max(len(v) for v in value_strs)
+    label_field = max_label + 1
+    sep = "│ "
+    value_field = max_value_len + 1
+    available_bar = max(1, width - len(title) - 1) - label_field - len(sep) - value_field
+
+    lines = []
+    title_line = title.ljust(width)
+    lines.append(title_line)
+    top_border = " " * label_field + "┌" + "─" * (available_bar + len(sep) - 2 + value_field) + "┐"
+    lines.append(top_border)
+    for i in range(n):
+        label = str(labels[i]).ljust(label_field)
+        bar_len = int((values[i] / maximum) * available_bar)
+        bar = "█" * bar_len + "░" * (available_bar - bar_len)
+        val = value_strs[i].rjust(value_field)
+        lines.append(f"{label}{sep}{bar} {val}")
+    bottom_border = " " * label_field + "└" + "─" * (available_bar + len(sep) - 2 + value_field) + "┘"
+    lines.append(bottom_border)
+
+    return "\n".join(lines)

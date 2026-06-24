@@ -11,47 +11,47 @@ def get_mongodb_section(language: str = "en"):
     </div>
     <div style="width: 1px; background: #333;"></div>
     <div style="flex: 3; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
-        <pre id="mongoClicksChart" style="margin: 0; font-size: 0.8vw;">CLK │ loading...</pre>
-        <pre id="mongoDwellChart" style="margin: 0; margin-top: 15px; font-size: 0.8vw;">DWL │ loading...</pre>
+        <pre id="mongoLangChart" style="margin: 0; font-size: 0.8vw;">LANG │ loading...</pre>
+        <pre id="mongoSectionsChart" style="margin: 0; margin-top: 15px; font-size: 0.8vw;">SECT │ loading...</pre>
     </div>
 </div>
 <script>
     function measureMongoChar() {
         const ctx = document.createElement('canvas').getContext('2d');
-        ctx.font = getComputedStyle(document.getElementById("mongoClicksChart")).font;
+        ctx.font = getComputedStyle(document.getElementById("mongoLangChart")).font;
         const metrics = ctx.measureText('M');
         const charWidth = metrics.width;
         const charHeight = (metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent) * 3;
         return { charWidth, charHeight };
     }
-    function connectMongoClicks() {
+    function connectMongoLang() {
         const { charWidth, charHeight } = measureMongoChar();
-        const container = document.getElementById("mongoClicksChart").parentElement;
+        const container = document.getElementById("mongoLangChart").parentElement;
         const width = container.clientWidth;
-        clicksEs = new EventSource(`/mongoClicksChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
-        clicksEs.addEventListener('message', (e) => {
-            document.getElementById("mongoClicksChart").textContent = e.data;
+        langEs = new EventSource(`/mongoLangChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
+        langEs.addEventListener('message', (e) => {
+            document.getElementById("mongoLangChart").textContent = e.data;
         });
-        clicksEs.addEventListener('error', () => {
-            document.getElementById("mongoClicksChart").textContent = "CLK │ offline";
-            clicksEs.close();
+        langEs.addEventListener('error', () => {
+            document.getElementById("mongoLangChart").textContent = "LANG │ offline";
+            langEs.close();
         });
     }
-    function connectMongoDwell() {
+    function connectMongoSections() {
         const { charWidth, charHeight } = measureMongoChar();
-        const container = document.getElementById("mongoDwellChart").parentElement;
+        const container = document.getElementById("mongoSectionsChart").parentElement;
         const width = container.clientWidth;
-        dwellEs = new EventSource(`/mongoDwellChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
-        dwellEs.addEventListener('message', (e) => {
-            document.getElementById("mongoDwellChart").textContent = e.data;
+        sectionsEs = new EventSource(`/mongoSectionsChart?width=$${width}&height=$${charHeight * 5}&charWidth=$${charWidth}&charHeight=$${charHeight}`);
+        sectionsEs.addEventListener('message', (e) => {
+            document.getElementById("mongoSectionsChart").textContent = e.data;
         });
-        dwellEs.addEventListener('error', () => {
-            document.getElementById("mongoDwellChart").textContent = "DWL │ offline";
-            dwellEs.close();
+        sectionsEs.addEventListener('error', () => {
+            document.getElementById("mongoSectionsChart").textContent = "SECT │ offline";
+            sectionsEs.close();
         });
     }
-    connectMongoClicks();
-    connectMongoDwell();
+    connectMongoLang();
+    connectMongoSections();
 </script>
 </div>
 """).substitute(text=text)
