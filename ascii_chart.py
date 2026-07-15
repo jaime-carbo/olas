@@ -74,34 +74,51 @@ def create_chart(x, y, height=250, x_legend_values=[]):
     return _apply_axes(curve, y, x_legend_values, x=x, max_ticks=2)
 
 
-def create_bar_chart(y, height=10, x_legend_values=[], width=80, title=""):
+def create_bar_chart(y, height=10, x_legend_values=[], width=80, title="", min_values=None, max_values=None):
     y = np.asarray(y, dtype=float)
     n = len(y)
     if n == 0 or height <= 0:
         return ""
 
+    if min_values is not None:
+        min_values = np.asarray(min_values, dtype=float)
+    if max_values is not None:
+        max_values = np.asarray(max_values, dtype=float)
+
     # Cap to most-recent bars that fit within width
-    max_val = float(np.max(y)) if n > 0 else 0.0
+    max_val = float(np.max(max_values)) if max_values is not None else (float(np.max(y)) if n > 0 else 0.0)
     biggest = f"{max_val:.2f}" if max_val > 0 else "0.00"
     smallest = "0.00"
     legend_width = max(len(biggest), len(smallest))
     axis_overhead = legend_width + 2
     available = max(3, width - axis_overhead)
-    bar_unit = 3
+
+    # Calculate bar_unit based on max label length (bar width + gap)
+    max_label_len = max(len(f"{v:.0f}") for v in y) if n > 0 else 2
+    bar_unit = max(3, max_label_len + 1)  # bar_width(2) + min_gap(max(1, label_len-2+1))
+
     max_bars = max(1, available // bar_unit + 1)
     if n > max_bars:
         y = y[-max_bars:]
         n = max_bars
         if x_legend_values:
             x_legend_values = x_legend_values[-max_bars:]
+        if min_values is not None:
+            min_values = min_values[-max_bars:]
+        if max_values is not None:
+            max_values = max_values[-max_bars:]
 
     maximum = max(max_val, 1e-9)
 
-    # Total bar cols (2 per bar) + gaps (min 1 each)
-    bare_cols = n * 2 + max(0, n - 1)
+    # Calculate max label length for dynamic gap
+    max_label_len = max(len(f"{v:.0f}") for v in y) if n > 0 else 2
+    min_gap = max(1, max_label_len - 2 + 1)  # Extra chars beyond bar width + 1 spacing
+
+    # Total bar cols (2 per bar) + gaps
+    bare_cols = n * 2 + max(0, (n - 1) * min_gap)
     if n > 1:
         extra = max(0, available - bare_cols)
-        gap = 1 + extra // (n - 1)
+        gap = min_gap + extra // (n - 1)
     else:
         gap = 0
     total_cols = n * 2 + max(0, (n - 1) * gap)
@@ -117,9 +134,9 @@ def create_bar_chart(y, height=10, x_legend_values=[], width=80, title=""):
     for i in range(n):
         col = bar_cols[i]
         top = top_rows[i]
-        # Value label directly above the bar cap
+        # Value label above bar: left-aligned to bar start
         label = f"{y[i]:.0f}"
-        label_start = col + (2 - len(label)) // 2
+        label_start = col
         for j, ch in enumerate(label):
             if 0 <= label_start + j < grid_width:
                 grid[top, label_start + j] = ch
@@ -129,6 +146,20 @@ def create_bar_chart(y, height=10, x_legend_values=[], width=80, title=""):
         for r in range(top + 2, height + 1):
             grid[r, col] = "█"
             grid[r, col + 1] = "█"
+
+        # Draw whiskers for min/max
+        if min_values is not None and max_values is not None:
+            min_row = int(np.clip(1 - min_values[i] / maximum, 0, 1) * (height - 1))
+            max_row = int(np.clip(1 - max_values[i] / maximum, 0, 1) * (height - 1))
+            # Only draw if whisker is outside the bar body
+            if min_row > top + 1 and 0 <= col < grid_width:
+                grid[min_row, col] = "┄"
+                if col + 1 < grid_width:
+                    grid[min_row, col + 1] = "┄"
+            if max_row < top and 0 <= col < grid_width:
+                grid[max_row, col] = "┄"
+                if col + 1 < grid_width:
+                    grid[max_row, col + 1] = "┄"
 
     # Apply axes to bar grid only (force_min=0 for honest baseline)
     chart = _apply_axes(grid, y, x_legend_values, cols_per_value=2, bar_cols=bar_cols, max_ticks=3, append_x_axis=True, force_min=0.0)

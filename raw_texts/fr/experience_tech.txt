@@ -1,5 +1,5 @@
 [Data Engineer (Fixed-Term) @ Multiverse Computing]
-Mar 2026 - Jun 2026
+Mar 2026 - Jul 2026
 Observabilité: Grafana, Prometheus, Openmeter
 DevOps: Terraform, ArgoCD, Kubernetes, GitLab
 Backend: FastAPI, Python, SQL

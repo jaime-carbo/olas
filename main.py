@@ -188,7 +188,11 @@ async def generate_cluster_history_chart(width, height, metric):
                     {"$match": {"timestamp": {"$gte": now - timedelta(hours=24)}}},
                     {"$group": {"_id": {"$dateToString": {"format": "%H:00", "date": "$timestamp"}},
                                 "avg_used": {"$avg": f"${metric}_used"},
-                                "avg_allocatable": {"$avg": f"${metric}_allocatable"}}},
+                                "avg_allocatable": {"$avg": f"${metric}_allocatable"},
+                                "min_used": {"$min": f"${metric}_used"},
+                                "max_used": {"$max": f"${metric}_used"},
+                                "min_allocatable": {"$min": f"${metric}_allocatable"},
+                                "max_allocatable": {"$max": f"${metric}_allocatable"}}},
                     {"$sort": {"_id": 1}}
                 ]
                 results = await database["cluster_metrics"].aggregate(pipeline).to_list(length=None)
@@ -197,8 +201,12 @@ async def generate_cluster_history_chart(width, height, metric):
                 else:
                     labels = [r["_id"] for r in results]
                     values = [(r["avg_used"] / r["avg_allocatable"] * 100) if r["avg_allocatable"] > 0 else 0 for r in results]
+                    min_vals = [(r["min_used"] / r["max_allocatable"] * 100) if r["max_allocatable"] > 0 else 0 for r in results]
+                    max_vals = [(r["max_used"] / r["min_allocatable"] * 100) if r["min_allocatable"] > 0 else 0 for r in results]
                     y = np.array(values, dtype=float)
-                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title=title)
+                    y_min = np.array(min_vals, dtype=float)
+                    y_max = np.array(max_vals, dtype=float)
+                    chart = create_bar_chart(y, height=height, x_legend_values=[labels[0], labels[-1]], width=width, title=title, min_values=y_min, max_values=y_max)
                     yield {"data": chart}
             except Exception as e:
                 print(f"{title} HISTORY CHART ERROR: {e}")
