@@ -1,0 +1,22 @@
+[Data Engineer @ Multiverse Computing]
+Mar 2026 - Jun 2026
+Monitorización: Grafana, Prometheus, Openmeter
+DevOps: Terraform, ArgoCD, Kubernetes, GitLab
+Backend: FastAPI, Python
+ML: vLLM
+Base de datos: PostgreSQL
+Cloud: AWS
+
+[Data Engineer @ Sopra Steria]
+Sep 2024 - Feb 2026
+Lenguaje: Python
+Orquestación: Control-M
+DevOps: Kubernetes, Ansible, GitLab, JFrog
+Base de datos: PostgreSQL, MySQL, Hive
+Cloud: AWS
+
+[AI Engineer Intern @ Edubit]
+Jul 2024 - Aug 2024
+ML/AI: Herramientas de IA
+CI/CD: GitHub Actions
+Lenguaje: Python

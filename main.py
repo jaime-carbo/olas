@@ -14,6 +14,7 @@ from k8s_info import get_cluster_metrics
 from cluster_section import get_cluster_section
 from mongodb_section import get_mongodb_section
 from resource_section import get_resource_section
+from experience_section import get_experience_section
 from body_texts import get_text_by_name
 import numpy as np
 import db
@@ -54,7 +55,8 @@ async def homepage(lang: str = "en"):
     cluster_html = get_cluster_section(lang)
     mongodb_html = get_mongodb_section(lang)
     resource_html = get_resource_section(lang)
-    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), cluster=cluster_html, mongodb=mongodb_html, resource_history=resource_html))
+    experience_html = get_experience_section(lang)
+    return HTMLResponse(get_template().substitute(header=get_header(), lang_selector=get_lang_selector(lang), bio=get_bio(lang), experience=experience_html, cluster=cluster_html, mongodb=mongodb_html, resource_history=resource_html))
 
 @app.get("/headerCurve")
 async def header_curve_endpoint(width: int = 350, height: int = 50, extra: str = "", charWidth: float = 7.2, charHeight: float = 80):  

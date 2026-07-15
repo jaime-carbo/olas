@@ -186,3 +186,66 @@ def create_horizontal_bar_chart(labels, values, width=80, title="", unit="", dis
     lines.append(bottom_border)
 
     return "\n".join(lines)
+
+
+def create_timeline_chart(entries, width=80, title="", label_width=None):
+    n = len(entries)
+    if n == 0:
+        return ""
+
+    if label_width is not None:
+        label_field = label_width
+    else:
+        max_label = max(len(f"{e['role']} @ {e['company']}") for e in entries)
+        label_field = min(max_label + 1, width // 3)
+
+    sep = "│ "
+    date_width = max(len(f"{e['start']} - {e['end']}") for e in entries)
+    available_bar = max(1, width - label_field - len(sep) - date_width - 1)
+    max_years = max(e["years"] for e in entries) if entries else 1
+
+    lines = []
+    title_line = title.ljust(width)
+    lines.append(title_line)
+    top_border = " " * label_field + "┌" + "─" * (available_bar + len(sep) - 2 + date_width) + "┐"
+    lines.append(top_border)
+    for e in entries:
+        label = f"{e['role']} @ {e['company']}"
+        if len(label) > label_field - 1:
+            label = label[:label_field - 2] + ".."
+        label = label.ljust(label_field)
+        bar_len = int((e["years"] / max_years) * available_bar)
+        bar = "█" * bar_len + "░" * (available_bar - bar_len)
+        date_str = f"{e['start']} - {e['end']}".rjust(date_width)
+        lines.append(f"{label}{sep}{bar} {date_str}")
+    bottom_border = " " * label_field + "└" + "─" * (available_bar + len(sep) - 2 + date_width) + "┘"
+
+    return "\n".join(lines)
+
+
+def create_tech_grid(entries, width=80, title=""):
+    if not entries:
+        return ""
+
+    inner = width - 2
+    bar = "│"
+
+    lines = []
+    if title:
+        lines.append(title.ljust(width))
+
+    for i, entry in enumerate(entries):
+        header = f"{entry['role']} @ {entry['company']}"
+        date = entry.get("date", "")
+        header_line = header.ljust(inner - len(date)) + date
+        lines.append(f"{bar}{header_line[:inner]}{bar}")
+        for cat, techs in entry.get("techs", []):
+            text = f"  {cat}: {techs}"
+            if len(text) > inner:
+                text = text[:inner - 1] + ".."
+            lines.append(f"{bar}{text.ljust(inner)}{bar}")
+        if i < len(entries) - 1:
+            lines.append(f"├{'─' * inner}┤")
+
+    lines.append(f"└{'─' * inner}┘")
+    return "\n".join(lines)
