@@ -20,10 +20,31 @@ import db
 
 LABEL_WIDTH = 10
 
+async def _background_metrics_collector():
+    while True:
+        try:
+            data = await get_cluster_metrics()
+            if data is not None:
+                database = db.get_db()
+                if database is not None:
+                    await database["cluster_metrics"].insert_one({
+                        "pod_name": data["pod_name"],
+                        "cpu_used": data["cpu_used"],
+                        "cpu_allocatable": data["cpu_allocatable"],
+                        "mem_used": data["mem_used"],
+                        "mem_allocatable": data["mem_allocatable"],
+                        "timestamp": datetime.now(timezone.utc),
+                    })
+        except Exception as e:
+            print(f"BACKGROUND METRICS ERROR: {e}")
+        await asyncio.sleep(30)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await db.connect()
+    task = asyncio.create_task(_background_metrics_collector())
     yield
+    task.cancel()
     await db.disconnect()
 
 app = FastAPI(lifespan=lifespan)
@@ -129,7 +150,6 @@ async def track_metrics(payload: dict):
         return {"status": "error"}
 
 async def generate_cluster_metrics(width):
-    poll_count = 0
     while True:
         data = await get_cluster_metrics()
         if data is None:
@@ -137,21 +157,6 @@ async def generate_cluster_metrics(width):
         else:
             cpu_pct = data["cpu_used"] / data["cpu_allocatable"] if data["cpu_allocatable"] > 0 else 0
             mem_pct = data["mem_used"] / data["mem_allocatable"] if data["mem_allocatable"] > 0 else 0
-
-            if poll_count % 6 == 0:
-                database = db.get_db()
-                if database is not None:
-                    try:
-                        await database["cluster_metrics"].insert_one({
-                            "pod_name": data["pod_name"],
-                            "cpu_used": data["cpu_used"],
-                            "cpu_allocatable": data["cpu_allocatable"],
-                            "mem_used": data["mem_used"],
-                            "mem_allocatable": data["mem_allocatable"],
-                            "timestamp": datetime.now(timezone.utc),
-                        })
-                    except Exception as e:
-                        print(f"CLUSTER METRICS STORAGE ERROR: {e}")
 
             cpu_used_m = data["cpu_used"] * 1000
             cpu_total_m = data["cpu_allocatable"] * 1000
@@ -165,7 +170,6 @@ async def generate_cluster_metrics(width):
             display = [f"{cpu_used_m:.0f}m/{cpu_total_m:.0f}m", f"{mem_used_mb:.0f}Mi/{mem_total_mb:.0f}Mi"]
             chart = create_horizontal_bar_chart(labels, values, width=width, title=pod_title, display=display, maxes=[100, 100], label_width=LABEL_WIDTH)
             yield {"data": chart}
-        poll_count += 1
         await asyncio.sleep(5)
 
 async def generate_cluster_history_chart(width, height, metric):
