@@ -235,7 +235,10 @@ def create_tech_grid(entries, width=80, title=""):
         lines.append(title.ljust(width))
 
     for i, entry in enumerate(entries):
-        header = f"{entry['role']} @ {entry['company']}"
+        if entry['company']:
+            header = f"{entry['role']} @ {entry['company']}"
+        else:
+            header = entry['role']
         date = entry.get("date", "")
         header_line = header.ljust(inner - len(date)) + date
         lines.append(f"{bar}{header_line[:inner]}{bar}")
